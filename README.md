@@ -1,32 +1,79 @@
-# React + TypeScript + Vite
+# Nexus Analytics — Enterprise Intelligence & Analytics Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+[![Vite](https://img.shields.io/badge/Vite-8.3-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-19.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-Currently, two official plugins are available:
+A modern, commercial-grade enterprise SaaS analytics platform engineered with modern React, TypeScript, TanStack Query, Redux Toolkit, Zustand, Recharts, and TanStack Table.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🚀 Quick Start (Windows / PowerShell)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```powershell
+# Clone or navigate to the repository
+cd E:\Nexus
 
-## Expanding the Oxlint configuration
+# Install dependencies
+npm install
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+# Start local development server
+npm run dev
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# Run production build and typecheck
+npm run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+---
+
+## 🏛️ Architecture & State Boundaries
+
+- **Server State**: Managed strictly with `@tanstack/react-query` (remote caching, pagination, deduplication, background sync).
+- **Global Business State**: Managed via `@reduxjs/toolkit` (user authentication, session tokens, permissions, global notification queue).
+- **UI & Layout Preferences**: Managed via `zustand` (dashboard widget placement, sidebar docking, density preferences).
+- **Styling**: Tailwind CSS v4 with custom enterprise tokens and CSS variables.
+
+---
+
+## 📁 Project Structure
+
+```text
+src/
+├── app/                  # Application bootstrap & provider wrappers
+├── assets/               # Brand assets and graphics
+├── components/           # Shared atomic UI components (Button, Input, Card, Modal, Table)
+│   ├── feedback/
+│   ├── forms/
+│   ├── navigation/
+│   ├── tables/
+│   └── ui/
+├── config/               # App configuration & route paths
+├── features/             # Domain modules
+│   ├── analytics/
+│   ├── auth/
+│   ├── dashboard/
+│   ├── data-management/
+│   ├── real-time/
+│   ├── settings/
+│   └── users/
+├── hooks/                # Reusable custom React hooks
+├── layouts/              # Shell layouts (RootLayout, AuthLayout)
+├── locales/              # i18n localization resources (EN, AR)
+├── routes/               # React Router navigation tree
+├── services/             # Axios HTTP client, API contracts & mock data
+├── store/                # Redux Toolkit & Zustand stores
+├── types/                # Global TypeScript models & DTOs
+└── utils/                # Utility helpers (cn, date, formatting)
+```
+
+---
+
+## 📜 Development Scripts
+
+| Command | Action |
+| :--- | :--- |
+| `npm run dev` | Starts Vite HMR local dev server |
+| `npm run build` | Compiles TypeScript (`tsc -b`) and bundles production assets via Vite |
+| `npm run preview` | Previews the production build locally |
+| `npm run lint` | Runs fast linter checks |
