@@ -4,14 +4,20 @@ import { Sidebar } from '@/components/navigation/Sidebar'
 import { Navbar } from '@/components/navigation/Navbar'
 import { Modal } from '@/components/feedback/Modal'
 import { Badge } from '@/components/ui/Badge'
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 export const RootLayout = () => {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  // Persist sidebar collapsed/expanded preference across page reloads
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useLocalStorage<boolean>(
+    'nexus_sidebar_collapsed',
+    false
+  )
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
 
   return (
     <div className="flex h-screen w-full bg-slate-950 text-slate-100 overflow-hidden font-sans">
-      {/* Reusable Collapsible Navigation Sidebar */}
+      {/* Reusable Collapsible Navigation Sidebar with Persisted State */}
       <Sidebar
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
@@ -22,9 +28,11 @@ export const RootLayout = () => {
         {/* Top Navbar */}
         <Navbar onOpenNotifications={() => setIsNotificationOpen(true)} />
 
-        {/* Dynamic Nested Route Content */}
+        {/* Dynamic Nested Route Content wrapped in an Error Boundary */}
         <main className="flex-1 overflow-y-auto p-6 bg-slate-950">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
 

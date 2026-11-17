@@ -1,5 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AppRoutes } from '@/routes/AppRoutes'
+import { ThemeProvider } from '@/features/settings/context/ThemeContext'
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary'
 
 // Enterprise QueryClient configuration
 const queryClient = new QueryClient({
@@ -14,11 +16,14 @@ const queryClient = new QueryClient({
 
 export const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppRoutes />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AppRoutes />
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
 
 export default App
-
