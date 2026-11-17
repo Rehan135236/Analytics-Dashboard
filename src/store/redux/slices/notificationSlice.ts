@@ -78,3 +78,4 @@ export const notificationSlice = createSlice({
 
 export const { addNotification, markAllAsRead, removeNotification } = notificationSlice.actions
 export default notificationSlice.reducer
+

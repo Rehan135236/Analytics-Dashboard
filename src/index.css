@@ -6,10 +6,6 @@
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
 
-  * {
-    border-color: rgba(226, 232, 240, 0.1);
-  }
-
   /* Custom subtle enterprise scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
@@ -19,10 +15,42 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.25);
+    background: rgba(148, 163, 184, 0.35);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.4);
+    background: rgba(148, 163, 184, 0.55);
   }
+}
+
+/* Light / Dark Mode Surface Utility Helpers */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+}
+
+/* Ticker Flash Animations for Real-time Financial Ticks */
+@keyframes tickUpFlash {
+  0% { background-color: rgba(16, 185, 129, 0.25); }
+  100% { background-color: transparent; }
+}
+
+@keyframes tickDownFlash {
+  0% { background-color: rgba(239, 68, 68, 0.25); }
+  100% { background-color: transparent; }
+}
+
+.flash-up {
+  animation: tickUpFlash 1.2s ease-out;
+}
+
+.flash-down {
+  animation: tickDownFlash 1.2s ease-out;
 }

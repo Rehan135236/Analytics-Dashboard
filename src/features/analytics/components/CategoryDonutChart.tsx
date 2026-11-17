@@ -49,3 +49,4 @@ export const CategoryDonutChart: React.FC<CategoryDonutChartProps> = ({
     </div>
   )
 }
+

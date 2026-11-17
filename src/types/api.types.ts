@@ -33,3 +33,4 @@ export interface EnterpriseRecord {
   throughputEps: number
   lastUpdated: string
 }
+

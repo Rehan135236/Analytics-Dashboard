@@ -40,3 +40,4 @@ export const useDashboardStore = create<DashboardStoreState>((set) => ({
     })),
   resetLayout: () => set({ visibleWidgets: defaultWidgets, timeRange: '30d', tableDensity: 'normal' }),
 }))
+

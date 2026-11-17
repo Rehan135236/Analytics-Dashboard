@@ -1,50 +1,49 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Nexus Analytics Enterprise Platform Smoke Tests', () => {
-  test('should render Executive Dashboard with KPI cards and Recharts canvas', async ({ page }) => {
+test.describe('Nexus Wealth & Portfolio Analytics Platform Smoke Tests', () => {
+  test('should render Institutional Portfolio Dashboard with live market ticker and AUM cards', async ({ page }) => {
     await page.goto('/')
 
-    // Expect page title or header
-    await expect(page.locator('h1')).toContainText('Executive Dashboard')
+    // Expect live financial ticker bar
+    await expect(page.getByText('MARKETS:')).toBeVisible()
+    await expect(page.getByText('S&P 500')).toBeVisible()
 
-    // Expect KPI metric cards to render
-    await expect(page.getByText('Total Gross Revenue')).toBeVisible()
-    await expect(page.getByText('Active Subscriptions')).toBeVisible()
+    // Expect header & portfolio AUM
+    await expect(page.locator('h1')).toContainText('Institutional Portfolio Overview')
+    await expect(page.getByText('Total Portfolio AUM')).toBeVisible()
+    await expect(page.getByText('Total Unrealized Return')).toBeVisible()
 
     // Expect navigation sidebar
     await expect(page.getByText('Nexus')).toBeVisible()
   })
 
-  test('should navigate to Data Management and perform table filtering', async ({ page }) => {
+  test('should navigate to Holdings & Orders and search assets', async ({ page }) => {
     await page.goto('/data')
 
-    // Expect title
-    await expect(page.locator('h1')).toContainText('Data Management')
+    await expect(page.locator('h1')).toContainText('Holdings & Position Ledger')
 
-    // Search for a specific cluster
-    const searchInput = page.getByPlaceholder('Search records by name, code...')
-    await searchInput.fill('Kafka')
+    // Search for NVDA ticker
+    const searchInput = page.getByPlaceholder('Search ticker, company, or sector...')
+    await searchInput.fill('NVDA')
 
-    // Assert filtered row visibility
-    await expect(page.getByText('Real-Time Pipeline Broker')).toBeVisible()
+    await expect(page.getByText('NVIDIA Corporation')).toBeVisible()
   })
 
-  test('should navigate to Real-Time Telemetry and display live stream', async ({ page }) => {
+  test('should navigate to Real-Time Market Telemetry and see live quotes', async ({ page }) => {
     await page.goto('/monitoring')
 
-    await expect(page.locator('h1')).toContainText('Real-Time Telemetry')
-    await expect(page.getByText('Stream Throughput')).toBeVisible()
-    await expect(page.getByText('Live Cluster Ingestion Stream')).toBeVisible()
+    await expect(page.locator('h1')).toContainText('Real-Time Market Telemetry')
+    await expect(page.getByText('Order Processing Rate')).toBeVisible()
+    await expect(page.getByText('Live Order Execution Tape')).toBeVisible()
   })
 
   test('should switch theme mode in Settings', async ({ page }) => {
     await page.goto('/settings')
 
     await expect(page.locator('h1')).toContainText('System Settings')
-    const lightButton = page.getByRole('button', { name: 'Light Mode' })
-    await lightButton.click()
+    const darkButton = page.getByRole('button', { name: 'Dark Mode' })
+    await darkButton.click()
 
-    // Expect html tag to have light class
-    await expect(page.locator('html')).toHaveClass(/light/)
+    await expect(page.locator('html')).toHaveClass(/dark/)
   })
 })

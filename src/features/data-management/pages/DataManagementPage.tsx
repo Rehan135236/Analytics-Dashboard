@@ -19,54 +19,54 @@ import {
   Search,
   SlidersHorizontal,
 } from 'lucide-react'
-import { useEnterpriseRecords } from '../hooks/useEnterpriseRecords'
-import type { EnterpriseRecord } from '@/types/api.types'
+import { initialHoldings } from '@/services/investmentData'
+import type { Holding, AssetClass } from '@/types/investment.types'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/forms/Input'
 import { Select } from '@/components/forms/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/feedback/Modal'
-import { Skeleton } from '@/components/ui/Skeleton'
 
 export const DataManagementPage: React.FC = () => {
-  const { records, isLoading, createRecord, deleteRecord, exportCsv } = useEnterpriseRecords()
+  const [holdings, setHoldings] = useState<Holding[]>(initialHoldings)
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [assetClassFilter, setAssetClassFilter] = useState('all')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isColumnPickerOpen, setIsColumnPickerOpen] = useState(false)
 
-  // New Record Form State
-  const [newRecordName, setNewRecordName] = useState('')
-  const [newRecordCode, setNewRecordCode] = useState('')
-  const [newRecordCategory, setNewRecordCategory] = useState<'Infrastructure' | 'Security' | 'Analytics' | 'Integration'>('Infrastructure')
-  const [newRecordRegion, setNewRecordRegion] = useState<'US-East' | 'US-West' | 'EU-Central' | 'APAC-South'>('US-East')
+  // New Position Form State
+  const [newSymbol, setNewSymbol] = useState('')
+  const [newName, setNewName] = useState('')
+  const [newClass, setNewClass] = useState<AssetClass>('Equities')
+  const [newShares, setNewShares] = useState(100)
+  const [newPrice, setNewPrice] = useState(150)
 
-  // Filter records by category before table
+  // Filter records by asset class before table
   const filteredData = useMemo(() => {
-    if (categoryFilter === 'all') return records
-    return records.filter((r) => r.category.toLowerCase() === categoryFilter.toLowerCase())
-  }, [records, categoryFilter])
+    if (assetClassFilter === 'all') return holdings
+    return holdings.filter((h) => h.assetClass.toLowerCase() === assetClassFilter.toLowerCase())
+  }, [holdings, assetClassFilter])
 
   // Table Column Definitions
-  const columns = useMemo<ColumnDef<EnterpriseRecord>[]>(
+  const columns = useMemo<ColumnDef<Holding>[]>(
     () => [
       {
-        accessorKey: 'name',
+        accessorKey: 'symbol',
         header: ({ column }) => (
           <button
             type="button"
-            className="flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white"
+            className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            <span>Resource Name</span>
+            <span>Ticker / Asset</span>
             {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="h-3.5 w-3.5 text-indigo-400" />
+              <ArrowUp className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
             ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="h-3.5 w-3.5 text-indigo-400" />
+              <ArrowDown className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
             ) : (
-              <ArrowUpDown className="h-3 w-3 text-slate-600" />
+              <ArrowUpDown className="h-3 w-3 text-slate-400" />
             )}
           </button>
         ),
@@ -74,91 +74,106 @@ export const DataManagementPage: React.FC = () => {
           const row = info.row.original
           return (
             <div>
-              <p className="font-semibold text-slate-100 text-sm">{info.getValue<string>()}</p>
-              <span className="font-mono text-[11px] text-slate-400">{row.code}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold text-sm px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
+                  {row.symbol}
+                </span>
+                <span className="font-semibold text-slate-900 dark:text-white text-xs">{row.name}</span>
+              </div>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 block">{row.sector}</span>
             </div>
           )
         },
       },
       {
-        accessorKey: 'category',
-        header: 'Category',
+        accessorKey: 'assetClass',
+        header: 'Asset Class',
         cell: (info) => (
-          <span className="text-xs font-medium text-slate-300">{info.getValue<string>()}</span>
+          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{info.getValue<string>()}</span>
         ),
       },
       {
-        accessorKey: 'region',
-        header: 'Region',
-        cell: (info) => (
-          <span className="font-mono text-xs text-slate-400">{info.getValue<string>()}</span>
-        ),
-      },
-      {
-        accessorKey: 'status',
-        header: 'Health Status',
-        cell: (info) => {
-          const status = info.getValue<string>()
-          switch (status) {
-            case 'Healthy':
-              return (
-                <Badge variant="success" size="sm" dot>
-                  Healthy
-                </Badge>
-              )
-            case 'Degraded':
-              return (
-                <Badge variant="warning" size="sm" dot>
-                  Degraded
-                </Badge>
-              )
-            case 'Critical':
-              return (
-                <Badge variant="danger" size="sm" dot>
-                  Critical
-                </Badge>
-              )
-            default:
-              return (
-                <Badge variant="default" size="sm">
-                  Maintenance
-                </Badge>
-              )
-          }
-        },
-      },
-      {
-        accessorKey: 'healthScore',
+        accessorKey: 'allocationPct',
         header: ({ column }) => (
           <button
             type="button"
-            className="flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white"
+            className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            <span>Score</span>
-            {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="h-3.5 w-3.5 text-indigo-400" />
-            ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="h-3.5 w-3.5 text-indigo-400" />
-            ) : (
-              <ArrowUpDown className="h-3 w-3 text-slate-600" />
-            )}
+            <span>Weight</span>
+            <ArrowUpDown className="h-3 w-3 text-slate-400" />
           </button>
         ),
         cell: (info) => (
-          <span className="font-mono text-xs font-semibold text-slate-200">
+          <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
             {info.getValue<number>()}%
           </span>
         ),
       },
       {
-        accessorKey: 'throughputEps',
-        header: 'Throughput',
+        accessorKey: 'shares',
+        header: 'Shares / Qty',
         cell: (info) => (
-          <span className="font-mono text-xs text-indigo-300">
-            {info.getValue<number>().toLocaleString()} eps
+          <span className="font-mono text-xs text-slate-600 dark:text-slate-400">
+            {info.getValue<number>().toLocaleString()}
           </span>
         ),
+      },
+      {
+        accessorKey: 'currentPrice',
+        header: 'Market Price',
+        cell: (info) => (
+          <span className="font-mono font-semibold text-xs text-slate-900 dark:text-white">
+            ${info.getValue<number>().toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'marketValue',
+        header: ({ column }) => (
+          <button
+            type="button"
+            className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            <span>Market Value</span>
+            <ArrowUpDown className="h-3 w-3 text-slate-400" />
+          </button>
+        ),
+        cell: (info) => (
+          <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">
+            ${info.getValue<number>().toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'dayChangePct',
+        header: '24h Change',
+        cell: (info) => {
+          const val = info.getValue<number>()
+          const isPos = val >= 0
+          return (
+            <Badge variant={isPos ? 'success' : 'danger'} size="sm">
+              {isPos ? '+' : ''}
+              {val}%
+            </Badge>
+          )
+        },
+      },
+      {
+        accessorKey: 'totalGainDollar',
+        header: 'Total P&L',
+        cell: (info) => {
+          const row = info.row.original
+          return (
+            <div className="font-mono text-xs">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                +${row.totalGainDollar.toLocaleString()}
+              </span>
+              <span className="text-[10px] text-slate-500 block">+{row.totalGainPct}%</span>
+            </div>
+          )
+        },
       },
       {
         id: 'actions',
@@ -166,13 +181,13 @@ export const DataManagementPage: React.FC = () => {
         cell: (info) => {
           const id = info.row.original.id
           return (
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-1.5">
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 p-1.5 h-8 w-8"
-                onClick={() => deleteRecord(id)}
-                title="Delete record"
+                className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-1.5 h-8 w-8"
+                onClick={() => setHoldings((prev) => prev.filter((h) => h.id !== id))}
+                title="Liquidate position"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -181,7 +196,7 @@ export const DataManagementPage: React.FC = () => {
         },
       },
     ],
-    [deleteRecord]
+    []
   )
 
   const table = useReactTable({
@@ -199,38 +214,71 @@ export const DataManagementPage: React.FC = () => {
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {
-        pageSize: 6,
+        pageSize: 7,
       },
     },
   })
 
-  const handleAddSubmit = async (e: React.FormEvent) => {
+  const handleExportCsv = () => {
+    const headers = ['Symbol', 'Name', 'Asset Class', 'Weight %', 'Shares', 'Current Price', 'Market Value', 'Total P&L']
+    const rows = holdings.map((h) => [
+      h.symbol,
+      `"${h.name}"`,
+      h.assetClass,
+      h.allocationPct,
+      h.shares,
+      h.currentPrice,
+      h.marketValue,
+      h.totalGainDollar,
+    ])
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `nexus_portfolio_holdings_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleAddPosition = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newRecordName || !newRecordCode) return
+    if (!newSymbol || !newName) return
 
-    await createRecord({
-      name: newRecordName,
-      code: newRecordCode,
-      category: newRecordCategory,
-      region: newRecordRegion,
-      status: 'Healthy',
-      healthScore: 99.5,
-      throughputEps: Math.floor(Math.random() * 60000) + 10000,
-    })
+    const newH: Holding = {
+      id: `hld_${newSymbol.toLowerCase()}_${Date.now()}`,
+      symbol: newSymbol.toUpperCase(),
+      name: newName,
+      assetClass: newClass,
+      sector: 'General Portfolio',
+      shares: Number(newShares),
+      avgCost: Number(newPrice),
+      currentPrice: Number(newPrice),
+      marketValue: Number(newShares) * Number(newPrice),
+      allocationPct: 2.5,
+      dayChangePct: 0.45,
+      totalGainDollar: 0,
+      totalGainPct: 0,
+      rating: 'Neutral',
+    }
 
-    setNewRecordName('')
-    setNewRecordCode('')
+    setHoldings((prev) => [newH, ...prev])
+    setNewSymbol('')
+    setNewName('')
     setIsAddModalOpen(false)
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800/80">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Data Management</h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Enterprise resource catalogue with multi-column sorting, search, and CSV export.
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Holdings & Position Ledger
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Real-time multi-asset positions with TanStack Table sorting, dynamic filtering, and CSV export.
           </p>
         </div>
 
@@ -239,9 +287,9 @@ export const DataManagementPage: React.FC = () => {
             variant="secondary"
             size="md"
             leftIcon={<Download className="h-4 w-4" />}
-            onClick={exportCsv}
+            onClick={handleExportCsv}
           >
-            Export CSV
+            Export Holdings CSV
           </Button>
 
           <Button
@@ -250,7 +298,7 @@ export const DataManagementPage: React.FC = () => {
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setIsAddModalOpen(true)}
           >
-            Add Record
+            Add Position
           </Button>
         </div>
       </div>
@@ -260,28 +308,29 @@ export const DataManagementPage: React.FC = () => {
         <div className="flex items-center gap-3 w-full sm:w-auto">
           {/* Global search */}
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <input
               type="text"
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              placeholder="Search records by name, code..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
+              placeholder="Search ticker, company, or sector..."
+              className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:bg-slate-900/80 dark:border-slate-800 dark:text-slate-200 dark:placeholder-slate-500"
             />
           </div>
 
-          {/* Category Filter */}
+          {/* Asset Class Filter */}
           <Select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            value={assetClassFilter}
+            onChange={(e) => setAssetClassFilter(e.target.value)}
             options={[
-              { value: 'all', label: 'All Categories' },
-              { value: 'infrastructure', label: 'Infrastructure' },
-              { value: 'security', label: 'Security' },
-              { value: 'analytics', label: 'Analytics' },
-              { value: 'integration', label: 'Integration' },
+              { value: 'all', label: 'All Asset Classes' },
+              { value: 'equities', label: 'Equities' },
+              { value: 'fixed income', label: 'Fixed Income' },
+              { value: 'alternatives', label: 'Alternatives / Gold' },
+              { value: 'crypto', label: 'Digital Assets (Crypto)' },
+              { value: 'cash', label: 'Cash & Short-Term' },
             ]}
-            className="w-40"
+            className="w-44"
           />
         </div>
 
@@ -300,16 +349,16 @@ export const DataManagementPage: React.FC = () => {
 
       {/* Column Visibility Dropdown */}
       {isColumnPickerOpen && (
-        <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-wrap gap-4 text-xs">
+        <div className="p-3 rounded-xl bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 flex flex-wrap gap-4 text-xs shadow-sm">
           {table.getAllLeafColumns().map((column) => {
             if (column.id === 'actions') return null
             return (
-              <label key={column.id} className="flex items-center gap-2 text-slate-300 cursor-pointer">
+              <label key={column.id} className="flex items-center gap-2 text-slate-700 dark:text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={column.getIsVisible()}
                   onChange={column.getToggleVisibilityHandler()}
-                  className="rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-slate-300 bg-white text-indigo-600 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950"
                 />
                 <span className="capitalize">{column.id}</span>
               </label>
@@ -322,7 +371,7 @@ export const DataManagementPage: React.FC = () => {
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider dark:bg-slate-950/80 dark:border-slate-800 dark:text-slate-400">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -335,24 +384,16 @@ export const DataManagementPage: React.FC = () => {
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-slate-800/60 bg-slate-900/30">
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={columns.length} className="p-4">
-                      <Skeleton className="h-6 w-full" />
-                    </td>
-                  </tr>
-                ))
-              ) : table.getRowModel().rows.length === 0 ? (
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900/30">
+              {table.getRowModel().rows.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="py-12 text-center text-slate-400">
-                    No enterprise records match your search criteria.
+                  <td colSpan={columns.length} className="py-12 text-center text-slate-500">
+                    No holdings match your search criteria.
                   </td>
                 </tr>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="py-3 px-4">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -366,14 +407,14 @@ export const DataManagementPage: React.FC = () => {
         </div>
 
         {/* Pagination Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-t border-slate-800/80 bg-slate-950/40 text-xs text-slate-400">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/40 text-xs text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-2">
             <span>
-              Page <strong className="text-white font-mono">{table.getState().pagination.pageIndex + 1}</strong> of{' '}
-              <strong className="text-white font-mono">{Math.max(1, table.getPageCount())}</strong>
+              Page <strong className="text-slate-900 dark:text-white font-mono">{table.getState().pagination.pageIndex + 1}</strong> of{' '}
+              <strong className="text-slate-900 dark:text-white font-mono">{Math.max(1, table.getPageCount())}</strong>
             </span>
-            <span className="text-slate-600">|</span>
-            <span>Total: {records.length} records</span>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <span>Total: {holdings.length} holdings</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -397,59 +438,70 @@ export const DataManagementPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Add Record Modal */}
+      {/* Add Position Modal */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Provision Enterprise Record"
-        description="Register a new telemetry cluster or integration node."
+        title="Add Asset to Portfolio"
+        description="Register a new equity, fixed income, or alternative position."
         footer={
           <>
             <Button variant="ghost" onClick={() => setIsAddModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleAddSubmit}>
-              Create Resource
+            <Button variant="primary" onClick={handleAddPosition}>
+              Add Position
             </Button>
           </>
         }
       >
-        <form onSubmit={handleAddSubmit} className="space-y-4">
+        <form onSubmit={handleAddPosition} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Ticker Symbol"
+              placeholder="e.g. GOOGL"
+              value={newSymbol}
+              onChange={(e) => setNewSymbol(e.target.value)}
+              required
+            />
+            <Input
+              label="Asset / Company Name"
+              placeholder="e.g. Alphabet Inc."
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Asset Class"
+              value={newClass}
+              onChange={(e) => setNewClass(e.target.value as any)}
+              options={[
+                { value: 'Equities', label: 'Equities' },
+                { value: 'Fixed Income', label: 'Fixed Income' },
+                { value: 'Alternatives', label: 'Alternatives' },
+                { value: 'Crypto', label: 'Crypto' },
+                { value: 'Cash', label: 'Cash' },
+              ]}
+            />
+            <Input
+              label="Shares / Units"
+              type="number"
+              value={newShares}
+              onChange={(e) => setNewShares(Number(e.target.value))}
+              required
+            />
+          </div>
+
           <Input
-            label="Resource Name"
-            placeholder="e.g. Asia Event Hub Gateway"
-            value={newRecordName}
-            onChange={(e) => setNewRecordName(e.target.value)}
+            label="Entry / Market Price ($)"
+            type="number"
+            step="0.01"
+            value={newPrice}
+            onChange={(e) => setNewPrice(Number(e.target.value))}
             required
-          />
-          <Input
-            label="Resource Code"
-            placeholder="e.g. HUB-EVT-APAC-01"
-            value={newRecordCode}
-            onChange={(e) => setNewRecordCode(e.target.value)}
-            required
-          />
-          <Select
-            label="Category"
-            value={newRecordCategory}
-            onChange={(e) => setNewRecordCategory(e.target.value as any)}
-            options={[
-              { value: 'Infrastructure', label: 'Infrastructure' },
-              { value: 'Security', label: 'Security' },
-              { value: 'Analytics', label: 'Analytics' },
-              { value: 'Integration', label: 'Integration' },
-            ]}
-          />
-          <Select
-            label="Deployment Region"
-            value={newRecordRegion}
-            onChange={(e) => setNewRecordRegion(e.target.value as any)}
-            options={[
-              { value: 'US-East', label: 'US-East (N. Virginia)' },
-              { value: 'US-West', label: 'US-West (Oregon)' },
-              { value: 'EU-Central', label: 'EU-Central (Frankfurt)' },
-              { value: 'APAC-South', label: 'APAC-South (Mumbai)' },
-            ]}
           />
         </form>
       </Modal>

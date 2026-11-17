@@ -68,3 +68,4 @@ export const PerformanceBarChart: React.FC<PerformanceBarChartProps> = ({ data, 
     </div>
   )
 }
+

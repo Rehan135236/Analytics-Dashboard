@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
+import { MarketTickerBar } from '@/components/navigation/MarketTickerBar'
 import { Sidebar } from '@/components/navigation/Sidebar'
 import { Navbar } from '@/components/navigation/Navbar'
 import { Modal } from '@/components/feedback/Modal'
@@ -8,7 +9,6 @@ import { ErrorBoundary } from '@/components/feedback/ErrorBoundary'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 export const RootLayout = () => {
-  // Persist sidebar collapsed/expanded preference across page reloads
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useLocalStorage<boolean>(
     'nexus_sidebar_collapsed',
     false
@@ -16,58 +16,67 @@ export const RootLayout = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
 
   return (
-    <div className="flex h-screen w-full bg-slate-950 text-slate-100 overflow-hidden font-sans">
-      {/* Reusable Collapsible Navigation Sidebar with Persisted State */}
-      <Sidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
-      />
+    <div className="flex flex-col h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-150">
+      {/* Live Financial Market Ticker Bar */}
+      <MarketTickerBar />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Navbar */}
-        <Navbar onOpenNotifications={() => setIsNotificationOpen(true)} />
+      <div className="flex flex-1 min-h-0 w-full overflow-hidden">
+        {/* Reusable Collapsible Navigation Sidebar */}
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+        />
 
-        {/* Dynamic Nested Route Content wrapped in an Error Boundary */}
-        <main className="flex-1 overflow-y-auto p-6 bg-slate-950">
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
-        </main>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Top Navbar */}
+          <Navbar onOpenNotifications={() => setIsNotificationOpen(true)} />
+
+          {/* Dynamic Nested Route Content */}
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 dark:bg-slate-950">
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
+          </main>
+        </div>
       </div>
 
       {/* Global Notifications Modal */}
       <Modal
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
-        title="Notifications Center"
-        description="System telemetry alerts and user audit activities"
+        title="Fund Audit & Execution Alerts"
+        description="Real-time order settlements, rebalance signals, and dividend credits"
       >
         <div className="space-y-3">
           {[
             {
-              title: 'Database replica synchronization completed',
-              time: '2 minutes ago',
+              title: 'Dividend Credit: $14,250 received from Vanguard Total Bond (BND)',
+              time: '4 minutes ago',
               type: 'success' as const,
             },
             {
-              title: 'Unusual query spike detected in region us-east',
-              time: '14 minutes ago',
+              title: 'Rebalance Alert: NVIDIA Corp weight exceeds 18% portfolio ceiling',
+              time: '28 minutes ago',
               type: 'warning' as const,
             },
             {
-              title: 'Weekly automated analytics report generated',
-              time: '1 hour ago',
+              title: 'Treasury Settlement: 10Y US Sovereign Auction settled successfully',
+              time: '2 hours ago',
               type: 'info' as const,
             },
           ].map((item, idx) => (
             <div
               key={idx}
-              className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-start justify-between gap-4"
+              className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/60 dark:border-slate-800/80 flex items-start justify-between gap-4"
             >
               <div>
-                <p className="text-xs font-medium text-slate-200">{item.title}</p>
-                <span className="text-[11px] text-slate-400 mt-1 block">{item.time}</span>
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  {item.title}
+                </p>
+                <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block">
+                  {item.time}
+                </span>
               </div>
               <Badge variant={item.type} size="sm">
                 {item.type}

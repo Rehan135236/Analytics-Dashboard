@@ -41,3 +41,4 @@ export function useEnterpriseRecords() {
     exportCsv: () => dataService.exportToCsv(recordsQuery.data || []),
   }
 }
+

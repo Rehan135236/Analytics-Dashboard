@@ -16,9 +16,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null
-      return stored || 'dark'
+      return stored || 'light' // Default to crisp, modern Light Mode
     }
-    return 'dark'
+    return 'light'
   })
 
   // Detect system preference
@@ -26,7 +26,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (typeof window !== 'undefined') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches
     }
-    return true
+    return false
   })
 
   // Listen for OS dark mode changes
@@ -80,4 +80,3 @@ export function useTheme(): ThemeContextType {
   }
   return context
 }
-

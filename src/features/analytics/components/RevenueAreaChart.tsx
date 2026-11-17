@@ -100,3 +100,4 @@ export const RevenueAreaChart: React.FC<RevenueAreaChartProps> = ({ data, height
     </div>
   )
 }
+

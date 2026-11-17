@@ -21,31 +21,33 @@ export const UsersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800/80">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-bold tracking-tight text-white">User & Access Management</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Fund Governance & Role-Based Access Control
+            </h1>
             <Badge variant="info" size="sm">
-              RBAC Enabled
+              SOC-2 Tier 1
             </Badge>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Directory of corporate users, granular role assignments, and permission matrices.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Directory of investment committee members, portfolio managers, and compliance auditor permissions.
           </p>
         </div>
 
         {/* Current Active Persona & Role Switcher */}
-        <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 p-1.5 rounded-xl">
-          <span className="text-xs text-slate-400 px-2 font-medium">Test Persona:</span>
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5 rounded-xl shadow-2xs">
+          <span className="text-xs text-slate-500 px-2 font-medium">Test Persona:</span>
           {(['SuperAdmin', 'Analyst', 'Viewer'] as UserRole[]).map((r) => (
             <button
               key={r}
               type="button"
               onClick={() => handlePersonaSwitch(r)}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                 currentUser?.role === r
                   ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800'
               }`}
             >
               {r}
@@ -57,40 +59,40 @@ export const UsersPage: React.FC = () => {
       {/* Role Permission Matrix Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Role Permission Matrix</CardTitle>
+          <CardTitle>Institutional Access Matrix</CardTitle>
           <CardDescription>
-            System privileges assigned per enterprise security classification.
+            Segregation of duties enforcing trading authorization limits and audit compliance.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-              <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/60 dark:border-slate-800/80 space-y-2">
+              <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-bold text-sm">
                 <ShieldCheck className="h-4 w-4" />
-                <span>SuperAdmin</span>
+                <span>SuperAdmin (Fund CIO)</span>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Full governance privileges: Add/edit records, provision users, manage billing, and alter telemetry configs.
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Full authority: Execute block trades, authorize rebalances, modify risk limits, and provision trading desks.
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-              <div className="flex items-center gap-2 text-cyan-400 font-semibold text-sm">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/60 dark:border-slate-800/80 space-y-2">
+              <div className="flex items-center gap-2 text-cyan-700 dark:text-cyan-400 font-bold text-sm">
                 <ShieldAlert className="h-4 w-4" />
-                <span>Analyst</span>
+                <span>Analyst (Quantitative Lead)</span>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Operational privileges: Create custom charts, export datasets (CSV/PDF), and execute ad-hoc telemetry queries.
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Analytical authority: Run Monte Carlo VaR models, build custom factor regressions, and export risk tearsheets.
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-              <div className="flex items-center gap-2 text-slate-400 font-semibold text-sm">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/60 dark:border-slate-800/80 space-y-2">
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-bold text-sm">
                 <Eye className="h-4 w-4" />
-                <span>Viewer</span>
+                <span>Viewer (Client / Auditor)</span>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Read-only privileges: View executive dashboards and real-time feeds without mutation capabilities.
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Auditing authority: Read-only access to historical performance returns and NAV statements without order routing.
               </p>
             </div>
           </div>
@@ -101,7 +103,7 @@ export const UsersPage: React.FC = () => {
       <Card className="overflow-hidden">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Corporate User Directory ({users.length})</CardTitle>
+            <CardTitle>Authorized Investment Committee Members ({users.length})</CardTitle>
             <Button variant="secondary" size="sm" leftIcon={<UserPlus className="h-3.5 w-3.5" />}>
               Invite Member
             </Button>
@@ -109,17 +111,17 @@ export const UsersPage: React.FC = () => {
         </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider dark:bg-slate-950/80 dark:border-slate-800 dark:text-slate-400">
               <tr>
-                <th className="py-3 px-4">User</th>
-                <th className="py-3 px-4">Department</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Last Active</th>
+                <th className="py-3 px-4">Member</th>
+                <th className="py-3 px-4">Division / Desk</th>
+                <th className="py-3 px-4">Clearance Role</th>
+                <th className="py-3 px-4">Account Status</th>
+                <th className="py-3 px-4">Last Activity</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 bg-slate-900/30">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900/30">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <tr key={i}>
@@ -130,19 +132,19 @@ export const UsersPage: React.FC = () => {
                 ))
               ) : (
                 users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center font-bold text-xs">
+                        <div className="h-8 w-8 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 dark:bg-indigo-600/20 dark:border-indigo-500/30 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">
                           {u.name.split(' ').map((n) => n[0]).join('')}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-100">{u.name}</p>
-                          <span className="text-[11px] text-slate-400 font-mono">{u.email}</span>
+                          <p className="font-semibold text-slate-900 dark:text-slate-100">{u.name}</p>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{u.email}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-300">{u.department}</td>
+                    <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-medium">{u.department}</td>
                     <td className="py-3.5 px-4">
                       <Badge
                         variant={
@@ -159,10 +161,10 @@ export const UsersPage: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4">
                       <Badge variant={u.isActive ? 'success' : 'outline'} size="sm" dot={u.isActive}>
-                        {u.isActive ? 'Active' : 'Suspended'}
+                        {u.isActive ? 'Active Trader' : 'Revoked'}
                       </Badge>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
+                    <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
                       {u.lastLogin}
                     </td>
                     <td className="py-3.5 px-4 text-right">
@@ -170,8 +172,8 @@ export const UsersPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleUserStatus(u.id)}
-                        className={u.isActive ? 'text-amber-400 hover:text-amber-300' : 'text-emerald-400 hover:text-emerald-300'}
-                        title={u.isActive ? 'Suspend access' : 'Reactivate access'}
+                        className={u.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-emerald-600 hover:text-emerald-700'}
+                        title={u.isActive ? 'Suspend trading authority' : 'Reinstate authority'}
                       >
                         <Power className="h-3.5 w-3.5" />
                       </Button>

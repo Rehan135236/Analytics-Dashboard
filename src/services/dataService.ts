@@ -67,3 +67,4 @@ export const dataService = {
     document.body.removeChild(link)
   },
 }
+
