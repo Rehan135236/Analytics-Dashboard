@@ -54,3 +54,4 @@ export interface TradeOrderRequest {
   orderType: 'MARKET' | 'LIMIT'
   limitPrice?: number
 }
+

@@ -205,3 +205,4 @@ export const getPortfolioHistory = (timeframe: '1W' | '1M' | '1Y' | '3Y' | 'ALL'
       ]
   }
 }
+

@@ -79,3 +79,4 @@ export const AssetAllocationDonut: React.FC<AssetAllocationDonutProps> = ({
     </div>
   )
 }
+

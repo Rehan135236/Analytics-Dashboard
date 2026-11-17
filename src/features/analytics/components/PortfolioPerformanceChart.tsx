@@ -154,3 +154,4 @@ export const PortfolioPerformanceChart: React.FC<PortfolioPerformanceChartProps>
     </div>
   )
 }
+
