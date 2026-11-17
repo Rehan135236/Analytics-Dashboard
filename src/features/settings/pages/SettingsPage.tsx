@@ -1,5 +1,7 @@
-import React from 'react'
-import { Moon, Sun, Monitor, Check, User } from 'lucide-react'
+import React, { useState } from 'react'
+import { Moon, Sun, Monitor, Check, User, Globe } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { switchAppLanguage } from '@/locales/i18n'
 import { useTheme, type Theme } from '@/features/settings/context/ThemeContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -9,6 +11,13 @@ import { Badge } from '@/components/ui/Badge'
 
 export const SettingsPage: React.FC = () => {
   const { theme, setTheme, resolvedTheme } = useTheme()
+  const { t, i18n } = useTranslation()
+  const [currentLng, setCurrentLng] = useState(i18n.language?.startsWith('ar') ? 'ar' : 'en')
+
+  const handleLanguageChange = (lng: 'en' | 'ar') => {
+    setCurrentLng(lng)
+    switchAppLanguage(lng)
+  }
 
   const themeOptions: Array<{ id: Theme; label: string; icon: React.ReactNode }> = [
     { id: 'dark', label: 'Dark Mode', icon: <Moon className="h-4 w-4" /> },
@@ -20,7 +29,7 @@ export const SettingsPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div className="border-b border-slate-800/60 pb-3">
-        <h1 className="text-2xl font-bold tracking-tight text-white">System Settings</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">{t('settingsTitle')}</h1>
         <p className="text-xs text-slate-400 mt-1">
           Manage system-wide visual appearance, localization, and administrator credentials.
         </p>
@@ -68,23 +77,32 @@ export const SettingsPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Localization Settings */}
+      {/* Internationalization Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Internationalization & Regional Settings</CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4 text-cyan-400" />
+              <CardTitle>Internationalization & Bidirectional Layout (LTR / RTL)</CardTitle>
+            </div>
+            <Badge variant="info" size="sm">
+              {currentLng.toUpperCase()} ({currentLng === 'ar' ? 'RTL' : 'LTR'})
+            </Badge>
+          </div>
           <CardDescription>
-            Configure platform language and text directionality (LTR/RTL).
+            Configure platform language and toggle between Left-to-Right and Right-to-Left Arabic display.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
-              label="Primary Language"
+              label="Active Locale"
+              value={currentLng}
+              onChange={(e) => handleLanguageChange(e.target.value as 'en' | 'ar')}
               options={[
-                { value: 'en', label: 'English (United States) — LTR' },
-                { value: 'ar', label: 'Arabic (العربية) — RTL' },
+                { value: 'en', label: 'English (US) — Left-to-Right (LTR)' },
+                { value: 'ar', label: 'العربية (Arabic) — Right-to-Left (RTL)' },
               ]}
-              defaultValue="en"
             />
             <Select
               label="Timezone Localization"
@@ -123,7 +141,7 @@ export const SettingsPage: React.FC = () => {
           </div>
           <div className="pt-2 flex justify-end">
             <Button variant="primary" size="md">
-              Save Profile Changes
+              {t('saveChanges')}
             </Button>
           </div>
         </CardContent>

@@ -1,79 +1,119 @@
-# Nexus Analytics — Enterprise Intelligence & Analytics Platform
+# Nexus Analytics — Enterprise SaaS Intelligence Platform
 
 [![Vite](https://img.shields.io/badge/Vite-8.3-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-19.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![TanStack Table](https://img.shields.io/badge/TanStack_Table-v8-FF4154)](https://tanstack.com/table)
+[![TanStack Query](https://img.shields.io/badge/TanStack_Query-v5-FF4154)](https://tanstack.com/query)
+[![PWA](https://img.shields.io/badge/PWA-Installable-purple)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
-A modern, commercial-grade enterprise SaaS analytics platform engineered with modern React, TypeScript, TanStack Query, Redux Toolkit, Zustand, Recharts, and TanStack Table.
+Nexus Analytics is a commercial-grade, production-ready enterprise analytics SaaS platform engineered with modern React, TypeScript, TanStack Query, Redux Toolkit, Zustand, Recharts, and TanStack Table.
 
 ---
 
-## 🚀 Quick Start (Windows / PowerShell)
+## 🏛️ System Architecture & State Boundaries
+
+To ensure scalable maintenance and eliminate state synchronization bugs, state is divided into four distinct tiers:
+
+1. **Server State (`@tanstack/react-query`)**:
+   - Manages all remote API requests, stale-while-revalidate caching, pagination caching, and cache invalidation.
+   - *Never* duplicated in Redux.
+2. **Global Client State (`@reduxjs/toolkit`)**:
+   - Manages user authentication, JWT session tokens, active RBAC role (`SuperAdmin`, `Analyst`, `Viewer`), and global notification alert queues.
+3. **UI / Layout Preferences (`zustand`)**:
+   - Manages dashboard widget visibility, table row density, and date range filters with zero boilerplate.
+4. **Environment Context (`Context API`)**:
+   - Manages theme mode (`dark` / `light` / `system`) and localization direction (`ltr` / `rtl`).
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                          NEXUS ANALYTICS                               │
+├────────────────────────────────────────────────────────────────────────┤
+│ Presentation Layer (React 19, Tailwind v4, Lucide, Recharts)           │
+├──────────────────────┬──────────────────────┬──────────────────────────┤
+│ Server State         │ Global Business State│ UI & Local Preferences   │
+│ (TanStack Query v5)  │ (Redux Toolkit)      │ (Zustand + Context API)  │
+├──────────────────────┼──────────────────────┼──────────────────────────┤
+│ • Ingestion cache    │ • Active User / Role │ • Widget toggles         │
+│ • Record mutations   │ • Auth tokens        │ • Density preferences    │
+│ • Optimistic updates │ • Global alert queue │ • Dark/Light theme mode  │
+│ • Auto-refetching    │ • Persona switching  │ • Arabic RTL / EN LTR    │
+├──────────────────────┴──────────────────────┴──────────────────────────┤
+│ Real-Time Layer (WebSocket Telemetry Engine + SignalR Adapter)        │
+├────────────────────────────────────────────────────────────────────────┤
+│ Network & Transport Layer (Axios Interceptors, Typed DTOs, Errors)     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🌟 Implemented Enterprise Modules
+
+1. **Executive Dashboard (`/dashboard`)**:
+   - Dynamic KPI metric cards with comparison trends (Revenue, Subscriptions, Conversion, SLA Uptime).
+   - Recharts interactive gradient area chart and workload allocation donut chart.
+   - Export report generation modal dialog.
+2. **Analytics Studio (`/analytics`)**:
+   - Comparative multi-metric charts (Revenue targets vs Concurrency volumes).
+   - Dynamic time-series filtering and regional dataset export.
+3. **Data Management (`/data`)**:
+   - Full **TanStack Table v8** datagrid.
+   - Column-level sorting (ascending/descending indicator).
+   - Global multi-column search and category dropdown filters.
+   - Dynamic pagination with customizable page size.
+   - Column visibility picker (show/hide columns on the fly).
+   - Instant CSV export generator.
+   - Slide-over "Provision Record" modal form with immediate cache invalidation.
+4. **User & Access Management (`/users`)**:
+   - Corporate directory with role badges (`SuperAdmin`, `Analyst`, `Viewer`).
+   - Interactive role persona switcher demonstrating Role-Based Access Control (RBAC).
+   - Instant account suspension and reactivation toggles.
+5. **Real-Time Telemetry (`/monitoring`)**:
+   - Live WebSocket / SignalR connection lifecycle status badge (`CONNECTED`, `RECONNECTING`, `DISCONNECTED`).
+   - Streaming event ingestion ledger with real-time throughput gauge (EPS).
+   - Pause / Resume and Clear ledger stream controls.
+   - Complete C# ASP.NET Core SignalR `TelemetryHub` integration contract.
+6. **System Settings (`/settings`)**:
+   - Interface theme switcher (`Dark`, `Light`, `System`).
+   - Internationalization switcher (English LTR vs Arabic RTL with Cairo font).
+   - Profile management form.
+
+---
+
+## 💻 Running Locally (Windows / PowerShell)
 
 ```powershell
-# Clone or navigate to the repository
+# Navigate to the workspace
 cd E:\Nexus
 
-# Install dependencies
+# Install dependencies (already executed)
 npm install
 
-# Start local development server
+# Start Vite local development server
 npm run dev
 
-# Run production build and typecheck
+# Run production build and TypeScript verification
 npm run build
+
+# Run Playwright end-to-end tests
+npx playwright test
 ```
 
 ---
 
-## 🏛️ Architecture & State Boundaries
+## 📱 Progressive Web App (PWA)
 
-- **Server State**: Managed strictly with `@tanstack/react-query` (remote caching, pagination, deduplication, background sync).
-- **Global Business State**: Managed via `@reduxjs/toolkit` (user authentication, session tokens, permissions, global notification queue).
-- **UI & Layout Preferences**: Managed via `zustand` (dashboard widget placement, sidebar docking, density preferences).
-- **Styling**: Tailwind CSS v4 with custom enterprise tokens and CSS variables.
-
----
-
-## 📁 Project Structure
-
-```text
-src/
-├── app/                  # Application bootstrap & provider wrappers
-├── assets/               # Brand assets and graphics
-├── components/           # Shared atomic UI components (Button, Input, Card, Modal, Table)
-│   ├── feedback/
-│   ├── forms/
-│   ├── navigation/
-│   ├── tables/
-│   └── ui/
-├── config/               # App configuration & route paths
-├── features/             # Domain modules
-│   ├── analytics/
-│   ├── auth/
-│   ├── dashboard/
-│   ├── data-management/
-│   ├── real-time/
-│   ├── settings/
-│   └── users/
-├── hooks/                # Reusable custom React hooks
-├── layouts/              # Shell layouts (RootLayout, AuthLayout)
-├── locales/              # i18n localization resources (EN, AR)
-├── routes/               # React Router navigation tree
-├── services/             # Axios HTTP client, API contracts & mock data
-├── store/                # Redux Toolkit & Zustand stores
-├── types/                # Global TypeScript models & DTOs
-└── utils/                # Utility helpers (cn, date, formatting)
-```
+Nexus Analytics is configured with `vite-plugin-pwa`:
+- Installable on desktop (Chrome, Edge) and mobile (Android, iOS).
+- Pre-caches core bundles (`sw.js` and Workbox).
+- Provides runtime asset caching for offline resilience.
 
 ---
 
-## 📜 Development Scripts
+## 🌐 Internationalization & Arabic RTL
 
-| Command | Action |
-| :--- | :--- |
-| `npm run dev` | Starts Vite HMR local dev server |
-| `npm run build` | Compiles TypeScript (`tsc -b`) and bundles production assets via Vite |
-| `npm run preview` | Previews the production build locally |
-| `npm run lint` | Runs fast linter checks |
+Built using `i18next` and `react-i18next`:
+- Seamlessly flips document text direction (`dir="rtl"`) when Arabic is selected.
+- Uses responsive Tailwind classes and Arabic-optimized typography (`Cairo`).
+- Persists user language preference in `localStorage`.

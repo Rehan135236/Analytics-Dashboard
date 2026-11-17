@@ -1,4 +1,6 @@
+import { Provider } from 'react-redux'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { store } from '@/store/redux/store'
 import { AppRoutes } from '@/routes/AppRoutes'
 import { ThemeProvider } from '@/features/settings/context/ThemeContext'
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary'
@@ -17,11 +19,13 @@ const queryClient = new QueryClient({
 export const App = () => {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <AppRoutes />
-        </QueryClientProvider>
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <AppRoutes />
+          </QueryClientProvider>
+        </ThemeProvider>
+      </Provider>
     </ErrorBoundary>
   )
 }

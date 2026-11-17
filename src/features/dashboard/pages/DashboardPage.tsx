@@ -1,36 +1,40 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   DollarSign,
   Users,
   Percent,
   Activity,
   Plus,
-  ArrowUpRight,
-  Filter,
   RefreshCw,
-  Sparkles,
 } from 'lucide-react'
 import { MetricCard } from '@/components/ui/MetricCard'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Input } from '@/components/forms/Input'
 import { Select } from '@/components/forms/Select'
 import { Modal } from '@/components/feedback/Modal'
+import { Input } from '@/components/forms/Input'
+import { RevenueAreaChart } from '@/features/analytics/components/RevenueAreaChart'
+import { CategoryDonutChart } from '@/features/analytics/components/CategoryDonutChart'
+import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData'
+import { useDashboardStore } from '@/store/zustand/useDashboardStore'
+import { Skeleton } from '@/components/ui/Skeleton'
 
-export const DashboardPage = () => {
+export const DashboardPage: React.FC = () => {
+  const { trends, isLoadingTrends, distribution, isLoadingDistribution, refetch } = useDashboardData()
+  const { timeRange, setTimeRange } = useDashboardStore()
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [filterPeriod, setFilterPeriod] = useState('30d')
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsRefreshing(true)
-    setTimeout(() => setIsRefreshing(false), 800)
+    await refetch()
+    setTimeout(() => setIsRefreshing(false), 500)
   }
 
   return (
     <div className="space-y-6">
-      {/* Header with Title and Action Toolbar */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/60">
         <div>
           <div className="flex items-center gap-2.5">
@@ -46,8 +50,8 @@ export const DashboardPage = () => {
 
         <div className="flex items-center gap-2.5">
           <Select
-            value={filterPeriod}
-            onChange={(e) => setFilterPeriod(e.target.value)}
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value as any)}
             options={[
               { value: '7d', label: 'Last 7 days' },
               { value: '30d', label: 'Last 30 days' },
@@ -78,7 +82,7 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {/* KPI Metric Cards Grid */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Gross Revenue"
@@ -114,128 +118,61 @@ export const DashboardPage = () => {
         />
       </div>
 
-      {/* Design System Preview Section: Responsive Cards & Components Showcase */}
+      {/* Live Recharts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Operational Overview */}
+        {/* Main Revenue Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Enterprise Performance Overview</CardTitle>
+                <CardTitle>Revenue Velocity & Target Projection</CardTitle>
                 <CardDescription>
-                  Comparative visualization layout ready for Recharts telemetry streaming.
+                  Continuous financial stream mapped against quarterly milestones.
                 </CardDescription>
               </div>
-              <Button variant="ghost" size="sm" rightIcon={<ArrowUpRight className="h-3.5 w-3.5" />}>
-                Deep Dive
-              </Button>
+              <Badge variant="success" size="sm">
+                +24.8% YoY
+              </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Visual placeholder box representing chart viewport */}
-            <div className="h-64 rounded-xl border border-dashed border-slate-800 bg-slate-950/60 flex flex-col items-center justify-center text-center p-6">
-              <Sparkles className="h-8 w-8 text-indigo-400 mb-2" />
-              <p className="text-sm font-semibold text-slate-200">Recharts Telemetry Stage</p>
-              <p className="text-xs text-slate-500 max-w-sm mt-1">
-                Phase 6 will mount interactive Recharts SVG area graphs, tooltip inspectors, and brush zoom controls here.
-              </p>
-            </div>
+          <CardContent>
+            {isLoadingTrends ? (
+              <Skeleton className="h-72 w-full rounded-xl" />
+            ) : (
+              <RevenueAreaChart data={trends} height={280} />
+            )}
+          </CardContent>
+        </Card>
 
-            {/* Micro Activity Feed */}
-            <div className="space-y-2 pt-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Recent Pipeline Events
-              </span>
-              {[
-                { title: 'APAC Region billing pipeline completed', status: 'success', time: '5m ago' },
-                { title: 'Telemetry threshold reached on cluster-04', status: 'warning', time: '22m ago' },
-                { title: 'Automated data backup verified in EU-Central', status: 'info', time: '1h ago' },
-              ].map((ev, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/40 border border-slate-800/60 text-xs"
-                >
-                  <span className="text-slate-300 font-medium">{ev.title}</span>
+        {/* Workload Distribution Donut */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Workload Distribution</CardTitle>
+            <CardDescription>Enterprise resource allocation breakdown</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isLoadingDistribution ? (
+              <Skeleton className="h-56 w-full rounded-xl" />
+            ) : (
+              <CategoryDonutChart data={distribution} height={200} />
+            )}
+
+            <div className="space-y-2 pt-2 border-t border-slate-800/80">
+              {distribution.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500 font-mono text-[11px]">{ev.time}</span>
-                    <Badge variant={ev.status as any} size="sm">
-                      {ev.status}
-                    </Badge>
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-slate-300">{item.name}</span>
                   </div>
+                  <span className="font-mono font-medium text-slate-200">{item.value}%</span>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
-
-        {/* UI Design System Gallery Widget */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Design System Controls</CardTitle>
-            <CardDescription>Verified tokens and component variants</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {/* Button Variants */}
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Button System
-              </span>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="primary" size="sm">
-                  Primary
-                </Button>
-                <Button variant="secondary" size="sm">
-                  Secondary
-                </Button>
-                <Button variant="outline" size="sm">
-                  Outline
-                </Button>
-                <Button variant="danger" size="sm">
-                  Danger
-                </Button>
-                <Button variant="ghost" size="sm">
-                  Ghost
-                </Button>
-              </div>
-            </div>
-
-            {/* Badge System */}
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Badge Tokens
-              </span>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="default">Default</Badge>
-                <Badge variant="success" dot>
-                  Success
-                </Badge>
-                <Badge variant="warning" dot>
-                  Warning
-                </Badge>
-                <Badge variant="danger" dot>
-                  Danger
-                </Badge>
-                <Badge variant="info">Info</Badge>
-              </div>
-            </div>
-
-            {/* Input System */}
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Form Inputs
-              </span>
-              <Input
-                label="Dataset Identifier"
-                placeholder="e.g. ds_prod_analytics_2026"
-                helperText="Alphanumeric unique identifier"
-                leftIcon={<Filter className="h-3.5 w-3.5" />}
-              />
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Modal Demonstration */}
+      {/* Report Modal */}
       <Modal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
@@ -253,10 +190,7 @@ export const DashboardPage = () => {
         }
       >
         <div className="space-y-4">
-          <Input
-            label="Report Title"
-            defaultValue="Q4 Executive Performance & Growth Audit"
-          />
+          <Input label="Report Title" defaultValue="Q4 Executive Performance & Growth Audit" />
           <Select
             label="Export Format"
             options={[
