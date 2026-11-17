@@ -6,3 +6,4 @@ export const DataManagementPage = () => {
     </div>
   )
 }
+
